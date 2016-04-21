@@ -1,4 +1,7 @@
 ﻿
+using System.Collections.Generic;
+using DataAccess.DataModels;
+
 namespace Repositories.Interfaces
 {
     /// <summary>
@@ -9,6 +12,12 @@ namespace Repositories.Interfaces
         #region Private
         #endregion
         #region Public
+
+        /// <summary>
+        /// Get All Labels for All Spaces
+        /// </summary>
+        IEnumerable<Label> GetAllLabels();
+
         #endregion
     }
 }

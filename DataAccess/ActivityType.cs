@@ -12,21 +12,19 @@ namespace DataAccess
     using System;
     using System.Collections.Generic;
     
-    public partial class DocLabel
+    public partial class ActivityType
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public DocLabel()
+        public ActivityType()
         {
-            this.DocLabelMappings = new HashSet<DocLabelMapping>();
+            this.Activities = new HashSet<Activity>();
         }
     
-        public long LabelId { get; set; }
+        public long ActivityTypeId { get; set; }
         public string Name { get; set; }
-        public int SortOrder { get; set; }
-        public int LabelCounter { get; set; }
-        public System.DateTime CounterResetDate { get; set; }
+        public string Description { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DocLabelMapping> DocLabelMappings { get; set; }
+        public virtual ICollection<Activity> Activities { get; set; }
     }
 }

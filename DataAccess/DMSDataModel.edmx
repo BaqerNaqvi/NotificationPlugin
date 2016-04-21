@@ -5,41 +5,575 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="DMSModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Activity">
+          <Key>
+            <PropertyRef Name="ActivityId" />
+          </Key>
+          <Property Name="ActivityId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ActivityTypeId" Type="bigint" Nullable="false" />
+          <Property Name="UserId" Type="bigint" Nullable="false" />
+          <Property Name="ActivityDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ActivityType">
+          <Key>
+            <PropertyRef Name="ActivityTypeId" />
+          </Key>
+          <Property Name="ActivityTypeId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="250" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="250" Nullable="false" />
+        </EntityType>
+        <EntityType Name="DocLabelMapping">
+          <Key>
+            <PropertyRef Name="DocLabelMappingId" />
+          </Key>
+          <Property Name="DocLabelMappingId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="DocumentId" Type="bigint" Nullable="false" />
+          <Property Name="LabelId" Type="bigint" Nullable="false" />
+        </EntityType>
         <EntityType Name="DocLabels">
           <Key>
             <PropertyRef Name="LabelId" />
           </Key>
-          <Property Name="LabelId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="LabelId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="SortOrder" Type="int" Nullable="false" />
+          <Property Name="LabelCounter" Type="int" Nullable="false" />
+          <Property Name="CounterResetDate" Type="datetime" Nullable="false" />
         </EntityType>
+        <EntityType Name="Document">
+          <Key>
+            <PropertyRef Name="DocumentId" />
+          </Key>
+          <Property Name="DocumentId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="250" Nullable="false" />
+          <Property Name="Type" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="ContentId" Type="nvarchar" MaxLength="250" />
+          <Property Name="SpaceContentId" Type="nvarchar" MaxLength="50" />
+          <Property Name="SpaceDocumentContentId" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreationDateTime" Type="datetime" />
+          <Property Name="CreatedBy" Type="bigint" Nullable="false" />
+          <Property Name="LikeCounter" Type="int" />
+        </EntityType>
+        <EntityType Name="DocumentLog">
+          <Key>
+            <PropertyRef Name="DocumentLogId" />
+          </Key>
+          <Property Name="DocumentLogId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="DocumentId" Type="bigint" Nullable="false" />
+          <Property Name="UserId" Type="bigint" Nullable="false" />
+          <Property Name="UpdateDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="DocumentSubcription">
+          <Key>
+            <PropertyRef Name="SubcriptionId" />
+          </Key>
+          <Property Name="SubcriptionId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserId" Type="bigint" Nullable="false" />
+          <Property Name="DocumentId" Type="bigint" Nullable="false" />
+          <Property Name="SubDateTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserName" Type="nvarchar" MaxLength="250" />
+          <Property Name="UserKey" Type="nvarchar" MaxLength="250" Nullable="false" />
+          <Property Name="UserGroup" Type="nvarchar" MaxLength="250" Nullable="false" />
+          <Property Name="Email" Type="nvarchar" MaxLength="250" />
+        </EntityType>
+        <Association Name="FK_Activity_ActivityType">
+          <End Role="ActivityType" Type="Self.ActivityType" Multiplicity="1" />
+          <End Role="Activity" Type="Self.Activity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ActivityType">
+              <PropertyRef Name="ActivityTypeId" />
+            </Principal>
+            <Dependent Role="Activity">
+              <PropertyRef Name="ActivityTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Activity_User">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="Activity" Type="Self.Activity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Activity">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocLabelMapping_DocLabels">
+          <End Role="DocLabels" Type="Self.DocLabels" Multiplicity="1" />
+          <End Role="DocLabelMapping" Type="Self.DocLabelMapping" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DocLabels">
+              <PropertyRef Name="LabelId" />
+            </Principal>
+            <Dependent Role="DocLabelMapping">
+              <PropertyRef Name="LabelId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocLabelMapping_Document">
+          <End Role="Document" Type="Self.Document" Multiplicity="1" />
+          <End Role="DocLabelMapping" Type="Self.DocLabelMapping" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Document">
+              <PropertyRef Name="DocumentId" />
+            </Principal>
+            <Dependent Role="DocLabelMapping">
+              <PropertyRef Name="DocumentId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Document_User_CreatedBy">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="Document" Type="Self.Document" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Document">
+              <PropertyRef Name="CreatedBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentLog_Document">
+          <End Role="Document" Type="Self.Document" Multiplicity="1" />
+          <End Role="DocumentLog" Type="Self.DocumentLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Document">
+              <PropertyRef Name="DocumentId" />
+            </Principal>
+            <Dependent Role="DocumentLog">
+              <PropertyRef Name="DocumentId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentLog_User">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="DocumentLog" Type="Self.DocumentLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="DocumentLog">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentSubcription_Document">
+          <End Role="Document" Type="Self.Document" Multiplicity="1" />
+          <End Role="DocumentSubcription" Type="Self.DocumentSubcription" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Document">
+              <PropertyRef Name="DocumentId" />
+            </Principal>
+            <Dependent Role="DocumentSubcription">
+              <PropertyRef Name="DocumentId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentSubcription_User">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="DocumentSubcription" Type="Self.DocumentSubcription" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="DocumentSubcription">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="DMSModelStoreContainer">
+          <EntitySet Name="Activity" EntityType="Self.Activity" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ActivityType" EntityType="Self.ActivityType" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DocLabelMapping" EntityType="Self.DocLabelMapping" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DocLabels" EntityType="Self.DocLabels" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Document" EntityType="Self.Document" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DocumentLog" EntityType="Self.DocumentLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DocumentSubcription" EntityType="Self.DocumentSubcription" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Activity_ActivityType" Association="Self.FK_Activity_ActivityType">
+            <End Role="ActivityType" EntitySet="ActivityType" />
+            <End Role="Activity" EntitySet="Activity" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Activity_User" Association="Self.FK_Activity_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="Activity" EntitySet="Activity" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocLabelMapping_DocLabels" Association="Self.FK_DocLabelMapping_DocLabels">
+            <End Role="DocLabels" EntitySet="DocLabels" />
+            <End Role="DocLabelMapping" EntitySet="DocLabelMapping" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocLabelMapping_Document" Association="Self.FK_DocLabelMapping_Document">
+            <End Role="Document" EntitySet="Document" />
+            <End Role="DocLabelMapping" EntitySet="DocLabelMapping" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Document_User_CreatedBy" Association="Self.FK_Document_User_CreatedBy">
+            <End Role="User" EntitySet="User" />
+            <End Role="Document" EntitySet="Document" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentLog_Document" Association="Self.FK_DocumentLog_Document">
+            <End Role="Document" EntitySet="Document" />
+            <End Role="DocumentLog" EntitySet="DocumentLog" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentLog_User" Association="Self.FK_DocumentLog_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="DocumentLog" EntitySet="DocumentLog" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentSubcription_Document" Association="Self.FK_DocumentSubcription_Document">
+            <End Role="Document" EntitySet="Document" />
+            <End Role="DocumentSubcription" EntitySet="DocumentSubcription" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentSubcription_User" Association="Self.FK_DocumentSubcription_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="DocumentSubcription" EntitySet="DocumentSubcription" />
+          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="DMSModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="DMSEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Activities" EntityType="DMSModel.Activity" />
+          <EntitySet Name="ActivityTypes" EntityType="DMSModel.ActivityType" />
+          <EntitySet Name="DocLabelMappings" EntityType="DMSModel.DocLabelMapping" />
+          <EntitySet Name="Documents" EntityType="DMSModel.Document" />
+          <EntitySet Name="DocumentLogs" EntityType="DMSModel.DocumentLog" />
+          <EntitySet Name="DocumentSubcriptions" EntityType="DMSModel.DocumentSubcription" />
+          <EntitySet Name="Users" EntityType="DMSModel.User" />
+          <AssociationSet Name="FK_Activity_ActivityType" Association="DMSModel.FK_Activity_ActivityType">
+            <End Role="ActivityType" EntitySet="ActivityTypes" />
+            <End Role="Activity" EntitySet="Activities" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Activity_User" Association="DMSModel.FK_Activity_User">
+            <End Role="User" EntitySet="Users" />
+            <End Role="Activity" EntitySet="Activities" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocLabelMapping_Document" Association="DMSModel.FK_DocLabelMapping_Document">
+            <End Role="Document" EntitySet="Documents" />
+            <End Role="DocLabelMapping" EntitySet="DocLabelMappings" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Document_User_CreatedBy" Association="DMSModel.FK_Document_User_CreatedBy">
+            <End Role="User" EntitySet="Users" />
+            <End Role="Document" EntitySet="Documents" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentLog_Document" Association="DMSModel.FK_DocumentLog_Document">
+            <End Role="Document" EntitySet="Documents" />
+            <End Role="DocumentLog" EntitySet="DocumentLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentSubcription_Document" Association="DMSModel.FK_DocumentSubcription_Document">
+            <End Role="Document" EntitySet="Documents" />
+            <End Role="DocumentSubcription" EntitySet="DocumentSubcriptions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentLog_User" Association="DMSModel.FK_DocumentLog_User">
+            <End Role="User" EntitySet="Users" />
+            <End Role="DocumentLog" EntitySet="DocumentLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DocumentSubcription_User" Association="DMSModel.FK_DocumentSubcription_User">
+            <End Role="User" EntitySet="Users" />
+            <End Role="DocumentSubcription" EntitySet="DocumentSubcriptions" />
+          </AssociationSet>
           <EntitySet Name="DocLabels" EntityType="DMSModel.DocLabel" />
+          <AssociationSet Name="FK_DocLabelMapping_DocLabels" Association="DMSModel.FK_DocLabelMapping_DocLabels">
+            <End Role="DocLabel" EntitySet="DocLabels" />
+            <End Role="DocLabelMapping" EntitySet="DocLabelMappings" />
+          </AssociationSet>
         </EntityContainer>
+        <EntityType Name="Activity">
+          <Key>
+            <PropertyRef Name="ActivityId" />
+          </Key>
+          <Property Name="ActivityId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ActivityTypeId" Type="Int64" Nullable="false" />
+          <Property Name="UserId" Type="Int64" Nullable="false" />
+          <Property Name="ActivityDateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="ActivityType" Relationship="DMSModel.FK_Activity_ActivityType" FromRole="Activity" ToRole="ActivityType" />
+          <NavigationProperty Name="User" Relationship="DMSModel.FK_Activity_User" FromRole="Activity" ToRole="User" />
+        </EntityType>
+        <EntityType Name="ActivityType">
+          <Key>
+            <PropertyRef Name="ActivityTypeId" />
+          </Key>
+          <Property Name="ActivityTypeId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Activities" Relationship="DMSModel.FK_Activity_ActivityType" FromRole="ActivityType" ToRole="Activity" />
+        </EntityType>
+        <EntityType Name="DocLabelMapping">
+          <Key>
+            <PropertyRef Name="DocLabelMappingId" />
+          </Key>
+          <Property Name="DocLabelMappingId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="DocumentId" Type="Int64" Nullable="false" />
+          <Property Name="LabelId" Type="Int64" Nullable="false" />
+          <NavigationProperty Name="Document" Relationship="DMSModel.FK_DocLabelMapping_Document" FromRole="DocLabelMapping" ToRole="Document" />
+          <NavigationProperty Name="DocLabel" Relationship="DMSModel.FK_DocLabelMapping_DocLabels" FromRole="DocLabelMapping" ToRole="DocLabel" />
+        </EntityType>
+        <EntityType Name="Document">
+          <Key>
+            <PropertyRef Name="DocumentId" />
+          </Key>
+          <Property Name="DocumentId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Type" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ContentId" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="SpaceContentId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SpaceDocumentContentId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreationDateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreatedBy" Type="Int64" Nullable="false" />
+          <Property Name="LikeCounter" Type="Int32" />
+          <NavigationProperty Name="DocLabelMappings" Relationship="DMSModel.FK_DocLabelMapping_Document" FromRole="Document" ToRole="DocLabelMapping" />
+          <NavigationProperty Name="Creator" Relationship="DMSModel.FK_Document_User_CreatedBy" FromRole="Document" ToRole="User" />
+          <NavigationProperty Name="DocumentLogs" Relationship="DMSModel.FK_DocumentLog_Document" FromRole="Document" ToRole="DocumentLog" />
+          <NavigationProperty Name="DocumentSubcriptions" Relationship="DMSModel.FK_DocumentSubcription_Document" FromRole="Document" ToRole="DocumentSubcription" />
+        </EntityType>
+        <EntityType Name="DocumentLog">
+          <Key>
+            <PropertyRef Name="DocumentLogId" />
+          </Key>
+          <Property Name="DocumentLogId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="DocumentId" Type="Int64" Nullable="false" />
+          <Property Name="UserId" Type="Int64" Nullable="false" />
+          <Property Name="UpdateDateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="Document" Relationship="DMSModel.FK_DocumentLog_Document" FromRole="DocumentLog" ToRole="Document" />
+          <NavigationProperty Name="User" Relationship="DMSModel.FK_DocumentLog_User" FromRole="DocumentLog" ToRole="User" />
+        </EntityType>
+        <EntityType Name="DocumentSubcription">
+          <Key>
+            <PropertyRef Name="SubcriptionId" />
+          </Key>
+          <Property Name="SubcriptionId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserId" Type="Int64" Nullable="false" />
+          <Property Name="DocumentId" Type="Int64" Nullable="false" />
+          <Property Name="SubDateTime" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Document" Relationship="DMSModel.FK_DocumentSubcription_Document" FromRole="DocumentSubcription" ToRole="Document" />
+          <NavigationProperty Name="User" Relationship="DMSModel.FK_DocumentSubcription_User" FromRole="DocumentSubcription" ToRole="User" />
+        </EntityType>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="UserKey" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="UserGroup" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Activities" Relationship="DMSModel.FK_Activity_User" FromRole="User" ToRole="Activity" />
+          <NavigationProperty Name="Documents" Relationship="DMSModel.FK_Document_User_CreatedBy" FromRole="User" ToRole="Document" />
+          <NavigationProperty Name="DocumentLogs" Relationship="DMSModel.FK_DocumentLog_User" FromRole="User" ToRole="DocumentLog" />
+          <NavigationProperty Name="DocumentSubcriptions" Relationship="DMSModel.FK_DocumentSubcription_User" FromRole="User" ToRole="DocumentSubcription" />
+        </EntityType>
+        <Association Name="FK_Activity_ActivityType">
+          <End Type="DMSModel.ActivityType" Role="ActivityType" Multiplicity="1" />
+          <End Type="DMSModel.Activity" Role="Activity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ActivityType">
+              <PropertyRef Name="ActivityTypeId" />
+            </Principal>
+            <Dependent Role="Activity">
+              <PropertyRef Name="ActivityTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Activity_User">
+          <End Type="DMSModel.User" Role="User" Multiplicity="1" />
+          <End Type="DMSModel.Activity" Role="Activity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Activity">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocLabelMapping_Document">
+          <End Type="DMSModel.Document" Role="Document" Multiplicity="1" />
+          <End Type="DMSModel.DocLabelMapping" Role="DocLabelMapping" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Document">
+              <PropertyRef Name="DocumentId" />
+            </Principal>
+            <Dependent Role="DocLabelMapping">
+              <PropertyRef Name="DocumentId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Document_User_CreatedBy">
+          <End Type="DMSModel.User" Role="User" Multiplicity="1" />
+          <End Type="DMSModel.Document" Role="Document" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Document">
+              <PropertyRef Name="CreatedBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentLog_Document">
+          <End Type="DMSModel.Document" Role="Document" Multiplicity="1" />
+          <End Type="DMSModel.DocumentLog" Role="DocumentLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Document">
+              <PropertyRef Name="DocumentId" />
+            </Principal>
+            <Dependent Role="DocumentLog">
+              <PropertyRef Name="DocumentId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentSubcription_Document">
+          <End Type="DMSModel.Document" Role="Document" Multiplicity="1" />
+          <End Type="DMSModel.DocumentSubcription" Role="DocumentSubcription" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Document">
+              <PropertyRef Name="DocumentId" />
+            </Principal>
+            <Dependent Role="DocumentSubcription">
+              <PropertyRef Name="DocumentId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentLog_User">
+          <End Type="DMSModel.User" Role="User" Multiplicity="1" />
+          <End Type="DMSModel.DocumentLog" Role="DocumentLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="DocumentLog">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DocumentSubcription_User">
+          <End Type="DMSModel.User" Role="User" Multiplicity="1" />
+          <End Type="DMSModel.DocumentSubcription" Role="DocumentSubcription" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="DocumentSubcription">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityType Name="DocLabel">
           <Key>
             <PropertyRef Name="LabelId" />
           </Key>
-          <Property Name="LabelId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="LabelId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Name" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="SortOrder" Type="Int32" Nullable="false" />
+          <Property Name="LabelCounter" Type="Int32" Nullable="false" />
+          <Property Name="CounterResetDate" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="DocLabelMappings" Relationship="DMSModel.FK_DocLabelMapping_DocLabels" FromRole="DocLabel" ToRole="DocLabelMapping" />
         </EntityType>
-      </Schema>
+        <Association Name="FK_DocLabelMapping_DocLabels">
+          <End Type="DMSModel.DocLabel" Role="DocLabel" Multiplicity="1" />
+          <End Type="DMSModel.DocLabelMapping" Role="DocLabelMapping" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DocLabel">
+              <PropertyRef Name="LabelId" />
+            </Principal>
+            <Dependent Role="DocLabelMapping">
+              <PropertyRef Name="LabelId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="DMSModelStoreContainer" CdmEntityContainer="DMSEntities">
+          <EntitySetMapping Name="Activities">
+            <EntityTypeMapping TypeName="DMSModel.Activity">
+              <MappingFragment StoreEntitySet="Activity">
+                <ScalarProperty Name="ActivityDateTime" ColumnName="ActivityDateTime" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="ActivityTypeId" ColumnName="ActivityTypeId" />
+                <ScalarProperty Name="ActivityId" ColumnName="ActivityId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ActivityTypes">
+            <EntityTypeMapping TypeName="DMSModel.ActivityType">
+              <MappingFragment StoreEntitySet="ActivityType">
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ActivityTypeId" ColumnName="ActivityTypeId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DocLabelMappings">
+            <EntityTypeMapping TypeName="DMSModel.DocLabelMapping">
+              <MappingFragment StoreEntitySet="DocLabelMapping">
+                <ScalarProperty Name="LabelId" ColumnName="LabelId" />
+                <ScalarProperty Name="DocumentId" ColumnName="DocumentId" />
+                <ScalarProperty Name="DocLabelMappingId" ColumnName="DocLabelMappingId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Documents">
+            <EntityTypeMapping TypeName="DMSModel.Document">
+              <MappingFragment StoreEntitySet="Document">
+                <ScalarProperty Name="LikeCounter" ColumnName="LikeCounter" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="CreationDateTime" ColumnName="CreationDateTime" />
+                <ScalarProperty Name="SpaceDocumentContentId" ColumnName="SpaceDocumentContentId" />
+                <ScalarProperty Name="SpaceContentId" ColumnName="SpaceContentId" />
+                <ScalarProperty Name="ContentId" ColumnName="ContentId" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="DocumentId" ColumnName="DocumentId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DocumentLogs">
+            <EntityTypeMapping TypeName="DMSModel.DocumentLog">
+              <MappingFragment StoreEntitySet="DocumentLog">
+                <ScalarProperty Name="UpdateDateTime" ColumnName="UpdateDateTime" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="DocumentId" ColumnName="DocumentId" />
+                <ScalarProperty Name="DocumentLogId" ColumnName="DocumentLogId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DocumentSubcriptions">
+            <EntityTypeMapping TypeName="DMSModel.DocumentSubcription">
+              <MappingFragment StoreEntitySet="DocumentSubcription">
+                <ScalarProperty Name="SubDateTime" ColumnName="SubDateTime" />
+                <ScalarProperty Name="DocumentId" ColumnName="DocumentId" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="SubcriptionId" ColumnName="SubcriptionId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Users">
+            <EntityTypeMapping TypeName="DMSModel.User">
+              <MappingFragment StoreEntitySet="User">
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="UserGroup" ColumnName="UserGroup" />
+                <ScalarProperty Name="UserKey" ColumnName="UserKey" />
+                <ScalarProperty Name="UserName" ColumnName="UserName" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="DocLabels">
             <EntityTypeMapping TypeName="DMSModel.DocLabel">
               <MappingFragment StoreEntitySet="DocLabels">
+                <ScalarProperty Name="CounterResetDate" ColumnName="CounterResetDate" />
+                <ScalarProperty Name="LabelCounter" ColumnName="LabelCounter" />
                 <ScalarProperty Name="SortOrder" ColumnName="SortOrder" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="LabelId" ColumnName="LabelId" />

@@ -19,7 +19,9 @@ namespace Repositories.Classes
             {
                 LabelId = source.LabelId,
                 Name = source.Name,
-                SortOrder = source.SortOrder
+                SortOrder = source.SortOrder,
+                CounterResetDate = source.CounterResetDate,
+                LabelCounter = source.LabelCounter
             };
         }
         #endregion

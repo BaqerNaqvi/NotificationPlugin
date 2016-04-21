@@ -25,6 +25,13 @@ namespace DataAccess
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<Activity> Activities { get; set; }
+        public virtual DbSet<ActivityType> ActivityTypes { get; set; }
+        public virtual DbSet<DocLabelMapping> DocLabelMappings { get; set; }
+        public virtual DbSet<Document> Documents { get; set; }
+        public virtual DbSet<DocumentLog> DocumentLogs { get; set; }
+        public virtual DbSet<DocumentSubcription> DocumentSubcriptions { get; set; }
+        public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<DocLabel> DocLabels { get; set; }
     }
 }
